@@ -45,7 +45,7 @@ namespace IntelektikaProj
             ParseStringToVariables(values);
         }
 
-        public Enum[] getEnums()
+        public Enum[] getAttributes()
         {
             return new Enum[]
             {
