@@ -12,7 +12,8 @@ namespace IntelektikaProj
         static void Main(string[] args)
         {
             var bayesProgram = new BayesMushroomClassificator(MushroomManager.Instance.GetMushrooms());
-            bayesProgram.Run();
+            //bayesProgram.Run();
+            bayesProgram.crossValidation();
         }
     }
 }

@@ -10,8 +10,10 @@ namespace IntelektikaProj
         private const decimal neutralProbabilityMain = 0.5M;
         private const decimal isPoisonousBoundaryMain = 0.5M;
         private const int nOfAttributesToCheckMain = 5;
+        private const int crossValidationN = 15;
         private const decimal percentOfShroomsToUseForTesting = 0.3M; // 30%
 
+        private List<Mushroom> mushrooms;
         private Dictionary<Enum, int> MushroomAttributeRepeatCountsPoisonous;
         private Dictionary<Enum, int> MushroomAttributeRepeatCountsEdible;
         private Dictionary<Enum, int> MushroomAttributeRepeatCountsAll;
@@ -22,11 +24,12 @@ namespace IntelektikaProj
 
         public BayesMushroomClassificator(List<Mushroom> mushrooms)
         {
-            InitLearningAndTestingData(mushrooms);
+            this.mushrooms = mushrooms;
         }
 
         public void Run()
         {
+            InitLearningAndTestingData();
             Console.WriteLine("Initing poisonous probability table from learning data...");
             initPoisonousProbabilityTable();
             Console.WriteLine("Finished initing poisonous probability table...\n");
@@ -40,6 +43,23 @@ namespace IntelektikaProj
                 (truePositivesAndFalseNegatives.Item1 + truePositivesAndFalseNegatives.Item2) / 2);
 
         }
+
+        public void crossValidation()
+        {
+            for (int x = 0; x < crossValidationN; x++)
+            {
+                InitLearningAndTestingData(x, crossValidationN);
+                initPoisonousProbabilityTable();
+                var truePositivesAndFalseNegatives = runBayesAlgorithmTest();
+                Console.WriteLine("Bayes algorithm finished for cross validation iteration number: {0}\nResults:", x + 1);
+                Console.WriteLine(
+                    "True positive accuracy: {0:f2}\nFalse negative accuracy: {1:f2}\nTotal accuracy {2:f2}",
+                    truePositivesAndFalseNegatives.Item1,
+                    truePositivesAndFalseNegatives.Item2,
+                    (truePositivesAndFalseNegatives.Item1 + truePositivesAndFalseNegatives.Item2) / 2);
+            }
+        }
+
 
         // returns true positive percentage and false negative percentage
         private Tuple<decimal, decimal> runBayesAlgorithmTest()
@@ -87,17 +107,30 @@ namespace IntelektikaProj
             return probabilityThatShroomIsPoisonous;
         }
 
-        private void InitLearningAndTestingData(List<Mushroom> mushrooms)
+        private void InitLearningAndTestingData(int crossValidationI = 0, int crossValidationN = 0)
         {
             MushroomAttributeRepeatCountsPoisonous = new Dictionary<Enum, int>();
             MushroomAttributeRepeatCountsEdible = new Dictionary<Enum, int>();
             MushroomAttributeRepeatCountsAll = new Dictionary<Enum, int>();
             ShroomsForTesting = new List<Mushroom>();
 
-            int shroomCountToUseForTesting = (int) (mushrooms.Count * percentOfShroomsToUseForTesting);
-
-            for (int i = 0; i < mushrooms.Count - shroomCountToUseForTesting; i++)
+            int shroomCountForTesting;
+            int shroomRemainder = 0;
+            if (crossValidationN != 0)
             {
+                shroomCountForTesting = mushrooms.Count - (int)(mushrooms.Count * (1.0M - (1.0M / crossValidationN)));
+                shroomRemainder = mushrooms.Count % crossValidationN;
+            }
+            else
+            {
+                shroomCountForTesting = (int)(mushrooms.Count * percentOfShroomsToUseForTesting);
+            }
+
+            for (int i = 0; i < mushrooms.Count - (crossValidationN == 0 ? shroomCountForTesting : 0); i++)
+            {
+               if (crossValidationN != 0 && i >= crossValidationI * shroomCountForTesting && i <= crossValidationI * shroomCountForTesting + shroomCountForTesting)
+                    continue;
+               
                 var enums = mushrooms[i].getAttributes();
 
                 foreach (var shroomClassifier in enums)
@@ -136,10 +169,19 @@ namespace IntelektikaProj
                     }
                 }
             }
-
-            for (int i = mushrooms.Count - shroomCountToUseForTesting; i < mushrooms.Count; i++)
+            if (crossValidationN == 0)
             {
-                ShroomsForTesting.Add(mushrooms[i]);
+                for (int i = mushrooms.Count - shroomCountForTesting; i < mushrooms.Count; i++)
+                {
+                    ShroomsForTesting.Add(mushrooms[i]);
+                }
+            }
+            else
+            {
+                for (int i = crossValidationI * shroomCountForTesting; i < crossValidationI * shroomCountForTesting + shroomCountForTesting - shroomRemainder; i++)
+                {
+                    ShroomsForTesting.Add(mushrooms[i]);
+                }
             }
         }
 
