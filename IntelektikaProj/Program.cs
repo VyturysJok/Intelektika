@@ -11,8 +11,13 @@ namespace IntelektikaProj
     {
         static void Main(string[] args)
         {
-            var bayesProgram = new BayesMushroomClassificator(MushroomManager.Instance.GetMushrooms());
+            var mushrooms = MushroomManager.Instance.GetMushrooms();
+
+            var bayesProgram = new BayesMushroomClassificator(mushrooms);
             bayesProgram.Run();
+
+            var compProgram = new CompetitiveMushroomClassificator(mushrooms);
+            compProgram.Run();
         }
     }
 }
