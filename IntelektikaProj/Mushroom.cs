@@ -120,6 +120,18 @@ namespace IntelektikaProj
             knobbed = 'k',
             sunken = 's'
         }
+        public static List<Enum> GetCapShapeEnums()
+        {
+            return new List<Enum>
+            {
+                CapShape.bell,
+                CapShape.conical,
+                CapShape.convex,
+                CapShape.flat,
+                CapShape.knobbed,
+                CapShape.sunken
+            };
+        }
 
         public enum CapSurface
         {
@@ -127,6 +139,16 @@ namespace IntelektikaProj
             grooves = 'g',
             scaly = 'y',
             smooth = 's'
+        }
+        public static List<Enum> GetCapSurfaceEnums()
+        {
+            return  new List<Enum>
+            {
+                CapSurface.fibrous,
+                CapSurface.grooves,
+                CapSurface.scaly,
+                CapSurface.smooth
+            };
         }
 
         public enum CapColor
@@ -142,11 +164,35 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> GetCapColorEnums()
+        {
+            return new List<Enum>
+            {
+                CapColor.brown,
+                CapColor.buff,
+                CapColor.cinnamon,
+                CapColor.gray,
+                CapColor.green,
+                CapColor.pink,
+                CapColor.purple,
+                CapColor.red,
+                CapColor.white,
+                CapColor.yellow
+            };
+        }
 
         public enum Bruises
         {
             bruises = 't',
             no = 'f'
+        }
+        public static List<Enum> GetBruisesEnums()
+        {
+            return new List<Enum>
+            {
+                Bruises.no,
+                Bruises.bruises
+            };
         }
 
         public enum Odor
@@ -161,6 +207,21 @@ namespace IntelektikaProj
             pungent = 'p',
             spicy = 's'
         }
+        public static List<Enum> GetOdorEnums()
+        {
+            return new List<Enum>
+            {
+                Odor.almond,
+                Odor.anise,
+                Odor.creosote,
+                Odor.fishy,
+                Odor.foul,
+                Odor.musty,
+                Odor.none,
+                Odor.pungent,
+                Odor.spicy
+            };
+        }
 
         public enum GillAttachment
         {
@@ -169,6 +230,16 @@ namespace IntelektikaProj
             free = 'f',
             notched = 'n'
         }
+        public static List<Enum> GetGillAttachmentEnums()
+        {
+            return new List<Enum>
+            {
+                GillAttachment.attached,
+                GillAttachment.descending,
+                GillAttachment.free,
+                GillAttachment.notched
+            };
+        }
 
         public enum GillSpacing
         {
@@ -176,11 +247,28 @@ namespace IntelektikaProj
             crowded = 'w',
             distant = 'd'
         }
+        public static List<Enum> GetGillSpacingEnums()
+        {
+            return new List<Enum>
+            {
+                GillSpacing.close,
+                GillSpacing.crowded,
+                GillSpacing.distant
+            };
+        }
 
         public enum GillSize
         {
             broad = 'b',
             narrow = 'n'
+        }
+        public static List<Enum> GetGillSizeEnums()
+        {
+            return new List<Enum>
+            {
+                GillSize.broad,
+                GillSize.narrow
+            };
         }
 
         public enum GillColor
@@ -198,11 +286,37 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> GetGillColorEnums()
+        {
+            return new List<Enum>
+            {
+                GillColor.black,
+                GillColor.brown,
+                GillColor.buff,
+                GillColor.chocolate,
+                GillColor.green,
+                GillColor.green,
+                GillColor.orange,
+                GillColor.pink,
+                GillColor.purple,
+                GillColor.red,
+                GillColor.white,
+                GillColor.yellow
+            };
+        }
 
         public enum StalkShape
         {
             enlarging = 'e',
             tapering = 't'
+        }
+        public static List<Enum> GetStalkShapeEnums()
+        {
+            return new List<Enum>
+            {
+                StalkShape.enlarging,
+                StalkShape.tapering
+            };
         }
 
         public enum StalkRoot
@@ -215,6 +329,19 @@ namespace IntelektikaProj
             rooted = 'r',
             missing = '?'
         }
+        public static List<Enum> GetStalkRootEnums()
+        {
+            return new List<Enum>
+            {
+                StalkRoot.bulbous,
+                StalkRoot.club,
+                StalkRoot.cup,
+                StalkRoot.equal,
+                StalkRoot.rhizomorphs,
+                StalkRoot.rooted,
+                StalkRoot.missing
+            };
+        }
 
         public enum StalkSurfaceAboveRing
         {
@@ -223,6 +350,16 @@ namespace IntelektikaProj
             silky = 'k',
             smooth = 's'
         }
+        public static List<Enum> GetStalkSurfaceAboveRingEnums()
+        {
+            return new List<Enum>
+            {
+                StalkSurfaceAboveRing.fibrous,
+                StalkSurfaceAboveRing.scaly,
+                StalkSurfaceAboveRing.silky,
+                StalkSurfaceAboveRing.smooth
+            };
+        }
 
         public enum StalkSurfaceBelowRing
         {
@@ -230,6 +367,16 @@ namespace IntelektikaProj
             scaly = 'y',
             silky = 'k',
             smooth = 's'
+        }
+        public static List<Enum> GetStalkSurfaceBelowRingEnums()
+        {
+            return new List<Enum>
+            {
+                StalkSurfaceBelowRing.fibrous,
+                StalkSurfaceBelowRing.scaly,
+                StalkSurfaceBelowRing.silky,
+                StalkSurfaceBelowRing.smooth
+            };
         }
 
         public enum StalkColorAboveRing
@@ -244,6 +391,21 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> StalkColorAboveRingEnums()
+        {
+            return new List<Enum>
+            {
+                StalkColorAboveRing.brown,
+                StalkColorAboveRing.buff,
+                StalkColorAboveRing.cinnamon,
+                StalkColorAboveRing.gray,
+                StalkColorAboveRing.orange,
+                StalkColorAboveRing.pink,
+                StalkColorAboveRing.red,
+                StalkColorAboveRing.white,
+                StalkColorAboveRing.yellow
+            };
+        }
 
         public enum StalkColorBelowRing
         {
@@ -257,11 +419,34 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> GetStalkColorBelowRingEnums()
+        {
+            return new List<Enum>
+            {
+                StalkColorBelowRing.brown,
+                StalkColorBelowRing.buff,
+                StalkColorBelowRing.cinnamon,
+                StalkColorBelowRing.gray,
+                StalkColorBelowRing.orange,
+                StalkColorBelowRing.pink,
+                StalkColorBelowRing.red,
+                StalkColorBelowRing.white,
+                StalkColorBelowRing.yellow
+            };
+        }
 
         public enum VeilType
         {
             partial = 'p',
             universal = 'u'
+        }
+        public static List<Enum> GetVeilTypeEnums()
+        {
+            return new List<Enum>
+            {
+                VeilType.partial,
+                VeilType.universal
+            };
         }
 
         public enum VeilColor
@@ -271,12 +456,31 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> GetVeilColorEnums()
+        {
+            return new List<Enum>
+            {
+                VeilColor.brown,
+                VeilColor.orange,
+                VeilColor.white,
+                VeilColor.yellow
+            };
+        }
 
         public enum RingNumber
         {
             none = 'n',
             one = 'o',
             two = 't'
+        }
+        public static List<Enum> GetRingNumberEnums()
+        {
+            return new List<Enum>
+            {
+                RingNumber.none,
+                RingNumber.one,
+                RingNumber.two
+            };
         }
 
         public enum RingType
@@ -289,6 +493,20 @@ namespace IntelektikaProj
             pendant = 'p',
             sheathing = 's',
             zone = 'z'
+        }
+        public static List<Enum> GetRingTypeEnums()
+        {
+            return new List<Enum>
+            {
+                RingType.cobwebby,
+                RingType.evanescent,
+                RingType.flaring,
+                RingType.large,
+                RingType.none,
+                RingType.pendant,
+                RingType.sheathing,
+                RingType.zone
+            };
         }
 
         public enum SporePrintColor
@@ -303,6 +521,21 @@ namespace IntelektikaProj
             white = 'w',
             yellow = 'y'
         }
+        public static List<Enum> GetSporePrintColorEnums()
+        {
+            return new List<Enum>
+            {
+                SporePrintColor.black,
+                SporePrintColor.brown,
+                SporePrintColor.buff,
+                SporePrintColor.chocolate,
+                SporePrintColor.green,
+                SporePrintColor.orange,
+                SporePrintColor.purple,
+                SporePrintColor.white,
+                SporePrintColor.yellow
+            };
+        }
 
         public enum Population
         {
@@ -312,6 +545,18 @@ namespace IntelektikaProj
             scattered = 's',
             several = 'v',
             solitary = 'y'
+        }
+        public static List<Enum> GetPopulationEnums()
+        {
+            return new List<Enum>
+            {
+                Population.abundant,
+                Population.clustered,
+                Population.numerous,
+                Population.scattered,
+                Population.several,
+                Population.solitary
+            };
         }
 
         public enum Habitat
@@ -323,6 +568,19 @@ namespace IntelektikaProj
             urban = 'u',
             waste = 'w',
             woods = 'd'
+        }
+        public static List<Enum> GetHabitatEnums()
+        {
+            return new List<Enum>
+            {
+                Habitat.grasses,
+                Habitat.leaves,
+                Habitat.meadows,
+                Habitat.paths,
+                Habitat.urban,
+                Habitat.waste,
+                Habitat.woods
+            };
         }
     }
 }

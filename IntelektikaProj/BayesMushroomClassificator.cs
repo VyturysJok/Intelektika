@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IntelektikaProj
 {
@@ -18,9 +19,17 @@ namespace IntelektikaProj
         private Dictionary<Enum, int> MushroomAttributeRepeatCountsEdible;
         private Dictionary<Enum, int> MushroomAttributeRepeatCountsAll;
 
+        private Dictionary<Enum, int> AllData_MushroomAttributeRepeatCountsPoisonous;
+        private Dictionary<Enum, int> AllData_MushroomAttributeRepeatCountsEdible;
+        private Dictionary<Enum, int> AllData_MushroomAttributeRepeatCountsAll;
+
         private List<Mushroom> ShroomsForTesting;
+        private List<Mushroom> AllShroomData;
 
         private Dictionary<Enum, decimal> poisonousProbabilityTable;
+        private Dictionary<Enum, decimal> poisonousProbabilityTableAll;
+
+        private int[] selectedDimensionsIndexes;
 
         public BayesMushroomClassificator(List<Mushroom> mushrooms)
         {
@@ -33,9 +42,22 @@ namespace IntelektikaProj
             Console.WriteLine("Initing poisonous probability table from learning data...");
             initPoisonousProbabilityTable();
             Console.WriteLine("Finished initing poisonous probability table...\n");
+
+            Console.WriteLine("Initing poisonous probability table from all data...");
+            initPoisonousProbabilityTableForAll();
+            Console.WriteLine("Finished initing poisonous probability table...\n");
+            
+            Console.WriteLine("Initing pearsons correlation matrix...");
+            var dimensionController = new DimensionController(poisonousProbabilityTable, AllShroomData);
+            dimensionController.Run(5);
+            selectedDimensionsIndexes = dimensionController.ShrinkedDimensionsIndexes;
+            Console.WriteLine("Finnished initing pearsons correleation matrix..\n");
+            Console.WriteLine(GetSelectedDimensionsString() + "\n");
+
             Console.WriteLine("Beginning Bayes algorithm test..");
             var truePositivesAndFalseNegatives = runBayesAlgorithmTest();
             Console.WriteLine("Bayes algorithm finished\nResults:");
+
             Console.WriteLine(
                 "True positive accuracy: {0:f2}\nFalse negative accuracy: {1:f2}\nTotal accuracy {2:f2}",
                 truePositivesAndFalseNegatives.Item1,
@@ -107,6 +129,59 @@ namespace IntelektikaProj
             return probabilityThatShroomIsPoisonous;
         }
 
+        private void InitAllMushroomData(List<Mushroom> mushrooms)
+        {
+            AllData_MushroomAttributeRepeatCountsPoisonous = new Dictionary<Enum, int>();
+            AllData_MushroomAttributeRepeatCountsEdible = new Dictionary<Enum, int>();
+            AllData_MushroomAttributeRepeatCountsAll = new Dictionary<Enum, int>();
+            AllShroomData = new List<Mushroom>();
+
+            int shroomCountToUseForTesting = (int)(mushrooms.Count * percentOfShroomsToUseForTesting);
+
+            for (int i = 0; i < mushrooms.Count; i++)
+            {
+                var enums = mushrooms[i].getAttributes();
+                AllShroomData.Add(mushrooms[i]);
+
+                foreach (var shroomClassifier in enums)
+                {
+                    if (mushrooms[i].IsEdible)
+                    {
+                        if (AllData_MushroomAttributeRepeatCountsEdible.ContainsKey(shroomClassifier))
+                        {
+                            AllData_MushroomAttributeRepeatCountsEdible[shroomClassifier] = AllData_MushroomAttributeRepeatCountsEdible[shroomClassifier] + 1;
+                        }
+                        else
+                        {
+                            AllData_MushroomAttributeRepeatCountsEdible[shroomClassifier] = 1;
+                        }
+                    }
+
+                    else
+                    {
+                        if (AllData_MushroomAttributeRepeatCountsPoisonous.ContainsKey(shroomClassifier))
+                        {
+                            AllData_MushroomAttributeRepeatCountsPoisonous[shroomClassifier] = AllData_MushroomAttributeRepeatCountsPoisonous[shroomClassifier] + 1;
+                        }
+                        else
+                        {
+                            AllData_MushroomAttributeRepeatCountsPoisonous[shroomClassifier] = 1;
+                        }
+                    }
+
+                    if (AllData_MushroomAttributeRepeatCountsAll.ContainsKey(shroomClassifier))
+                    {
+                        AllData_MushroomAttributeRepeatCountsAll[shroomClassifier] = AllData_MushroomAttributeRepeatCountsAll[shroomClassifier] + 1;
+                    }
+                    else
+                    {
+                        AllData_MushroomAttributeRepeatCountsAll[shroomClassifier] = 1;
+                    }
+                }
+            }
+        }
+
+        private void InitLearningAndTestingData(List<Mushroom> mushrooms)
         private void InitLearningAndTestingData(int crossValidationI = 0, int crossValidationN = 0)
         {
             MushroomAttributeRepeatCountsPoisonous = new Dictionary<Enum, int>();
@@ -220,6 +295,71 @@ namespace IntelektikaProj
 
                 poisonousProbabilityTable.Add(classifier, PclassifierWord);
             }
+        }
+
+        private void initPoisonousProbabilityTableForAll()
+        {
+            poisonousProbabilityTableAll = new Dictionary<Enum, decimal>();
+
+            foreach (var classifier in AllData_MushroomAttributeRepeatCountsAll.Keys)
+            {
+                int poisonousRepeatCount = AllData_MushroomAttributeRepeatCountsPoisonous.ContainsKey(classifier) ? AllData_MushroomAttributeRepeatCountsPoisonous[classifier] : 0;
+                int edibleRepeatCount = AllData_MushroomAttributeRepeatCountsEdible.ContainsKey(classifier) ? AllData_MushroomAttributeRepeatCountsEdible[classifier] : 0;
+                int allRepeatCount = AllData_MushroomAttributeRepeatCountsAll.ContainsKey(classifier) ? AllData_MushroomAttributeRepeatCountsAll[classifier] : 0;
+                if (allRepeatCount == 0)
+                {
+                    continue;
+                }
+                decimal Pclassifierpoisonous = (decimal)poisonousRepeatCount / allRepeatCount;
+                decimal Pclassifieredible = (decimal)edibleRepeatCount / allRepeatCount;
+                decimal PclassifierWord = defaultProbabilityMain;
+                if (Pclassifieredible > 0.0M && Pclassifierpoisonous == 0.0M)
+                {
+                    PclassifierWord = 0.01M;
+                }
+                else if (Pclassifierpoisonous > 0.0M && Pclassifieredible == 0.0M)
+                {
+                    PclassifierWord = 0.99M;
+                }
+                else if (Pclassifierpoisonous > 0 && Pclassifieredible > 0)
+                {
+                    PclassifierWord = Pclassifierpoisonous / (Pclassifierpoisonous + Pclassifieredible);
+                }
+                else
+                {
+                    PclassifierWord = 0.01M;
+                }
+
+                poisonousProbabilityTableAll.Add(classifier, PclassifierWord);
+            }
+        }
+
+        private string GetSelectedDimensionsString()
+        {
+            string result = "Selected dimensions: ";
+            result += selectedDimensionsIndexes.Contains(0) ? " cap-shape," : "";
+            result += selectedDimensionsIndexes.Contains(1) ? " cap-surface," : "";
+            result += selectedDimensionsIndexes.Contains(2) ? " cap-color," : "";
+            result += selectedDimensionsIndexes.Contains(3) ? " bruises," : "";
+            result += selectedDimensionsIndexes.Contains(4) ? " odor," : "";
+            result += selectedDimensionsIndexes.Contains(5) ? " gill-attachment," : "";
+            result += selectedDimensionsIndexes.Contains(6) ? " gill-spacing," : "";
+            result += selectedDimensionsIndexes.Contains(7) ? " gill-size," : "";
+            result += selectedDimensionsIndexes.Contains(8) ? " gill-color," : "";
+            result += selectedDimensionsIndexes.Contains(9) ? " stalk-shape," : "";
+            result += selectedDimensionsIndexes.Contains(10) ? " stalk-root," : "";
+            result += selectedDimensionsIndexes.Contains(11) ? " stalk-surface-above-ring," : "";
+            result += selectedDimensionsIndexes.Contains(12) ? " stalk-surface-below-ring," : "";
+            result += selectedDimensionsIndexes.Contains(13) ? " stalk-color-above-ring," : "";
+            result += selectedDimensionsIndexes.Contains(14) ? " stalk-color-below-ring," : "";
+            result += selectedDimensionsIndexes.Contains(15) ? " veil-type," : "";
+            result += selectedDimensionsIndexes.Contains(16) ? " veil-color," : "";
+            result += selectedDimensionsIndexes.Contains(17) ? " ring-number," : "";
+            result += selectedDimensionsIndexes.Contains(18) ? " ring-type," : "";
+            result += selectedDimensionsIndexes.Contains(19) ? " spore-print-color," : "";
+            result += selectedDimensionsIndexes.Contains(20) ? " population," : "";
+            result += selectedDimensionsIndexes.Contains(21) ? " habitat," : "";
+            return result;
         }
     }
 }
