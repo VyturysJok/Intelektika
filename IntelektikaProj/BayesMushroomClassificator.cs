@@ -10,7 +10,7 @@ namespace IntelektikaProj
         private const decimal defaultProbabilityMain = 0.4M;
         private const decimal neutralProbabilityMain = 0.5M;
         private const decimal isPoisonousBoundaryMain = 0.5M;
-        private const int nOfAttributesToCheckMain = 5;
+        private const int nOfAttributesToCheckMain = 15;
         private const int crossValidationN = 15;
         private const decimal percentOfShroomsToUseForTesting = 0.3M; // 30%
 
@@ -38,7 +38,9 @@ namespace IntelektikaProj
 
         public void Run()
         {
+            InitAllMushroomData();
             InitLearningAndTestingData();
+
             Console.WriteLine("Initing poisonous probability table from learning data...");
             initPoisonousProbabilityTable();
             Console.WriteLine("Finished initing poisonous probability table...\n");
@@ -46,16 +48,26 @@ namespace IntelektikaProj
             Console.WriteLine("Initing poisonous probability table from all data...");
             initPoisonousProbabilityTableForAll();
             Console.WriteLine("Finished initing poisonous probability table...\n");
-            
+
+            Console.WriteLine("Beginning Bayes algorithm test..");
+            var truePositivesAndFalseNegatives = runBayesAlgorithmTest(false);
+            Console.WriteLine("Bayes algorithm finished\nResults:");
+
+            Console.WriteLine(
+                "True positive accuracy: {0:f2}\nFalse negative accuracy: {1:f2}\nTotal accuracy {2:f2}",
+                truePositivesAndFalseNegatives.Item1,
+                truePositivesAndFalseNegatives.Item2,
+                (truePositivesAndFalseNegatives.Item1 + truePositivesAndFalseNegatives.Item2) / 2);
+
             Console.WriteLine("Initing pearsons correlation matrix...");
-            var dimensionController = new DimensionController(poisonousProbabilityTable, AllShroomData);
+            var dimensionController = new DimensionController(poisonousProbabilityTableAll, AllShroomData);
             dimensionController.Run(5);
             selectedDimensionsIndexes = dimensionController.ShrinkedDimensionsIndexes;
             Console.WriteLine("Finnished initing pearsons correleation matrix..\n");
             Console.WriteLine(GetSelectedDimensionsString() + "\n");
 
-            Console.WriteLine("Beginning Bayes algorithm test..");
-            var truePositivesAndFalseNegatives = runBayesAlgorithmTest();
+            Console.WriteLine("Beginning Bayes algorithm test with dimesnion reduction..");
+            truePositivesAndFalseNegatives = runBayesAlgorithmTest(true);
             Console.WriteLine("Bayes algorithm finished\nResults:");
 
             Console.WriteLine(
@@ -72,7 +84,7 @@ namespace IntelektikaProj
             {
                 InitLearningAndTestingData(x, crossValidationN);
                 initPoisonousProbabilityTable();
-                var truePositivesAndFalseNegatives = runBayesAlgorithmTest();
+                var truePositivesAndFalseNegatives = runBayesAlgorithmTest(false);
                 Console.WriteLine("Bayes algorithm finished for cross validation iteration number: {0}\nResults:", x + 1);
                 Console.WriteLine(
                     "True positive accuracy: {0:f2}\nFalse negative accuracy: {1:f2}\nTotal accuracy {2:f2}",
@@ -84,7 +96,7 @@ namespace IntelektikaProj
 
 
         // returns true positive percentage and false negative percentage
-        private Tuple<decimal, decimal> runBayesAlgorithmTest()
+        private Tuple<decimal, decimal> runBayesAlgorithmTest(bool useDimensionReduction)
         {
             int poisonousTruePositiveCount = 0;
             int poisonousFalseNegativeCount = 0;
@@ -92,7 +104,7 @@ namespace IntelektikaProj
             int edibleCount = 0;
             foreach (var shroom in ShroomsForTesting)
             {
-                var poisonousProbability = getPoisonousProbability(shroom);
+                var poisonousProbability = getPoisonousProbability(shroom, useDimensionReduction);
                 if (shroom.IsEdible)
                 {
                     edibleCount++;
@@ -107,20 +119,25 @@ namespace IntelektikaProj
             return new Tuple<decimal, decimal>((decimal)poisonousTruePositiveCount / poisonousCount, (decimal)poisonousFalseNegativeCount / edibleCount);
         }
 
-        private decimal getPoisonousProbability(Mushroom shroom)
+        private decimal getPoisonousProbability(Mushroom shroom, bool useDimensionReduction = false)
         {
             // Using enum, decimal Tuple just for debugging, decimal List would suffice
             List<Tuple<Enum, decimal>> probabilities = new List<Tuple<Enum, decimal>>();
-            foreach (var attribute in shroom.getAttributes())
+            var attributes = shroom.getAttributes();
+            for (int i = 0; i < attributes.Length; i++)
             {
+                if (useDimensionReduction && !selectedDimensionsIndexes.Contains(i))
+                    continue;
+                var attribute = attributes[i];
                 decimal Ppoisonous = poisonousProbabilityTable.ContainsKey(attribute) ? poisonousProbabilityTable[attribute] : defaultProbabilityMain;
                 probabilities.Add(new Tuple<Enum, decimal>(attribute, Ppoisonous));
             }
+
             probabilities.Sort((a, b) => Math.Abs(b.Item2 - neutralProbabilityMain).CompareTo(Math.Abs(a.Item2 - neutralProbabilityMain)));
             decimal probabilityProduct = 1.0M;
             decimal probabilityInverseProduct = 1.0M;
-
-            for (int i = 0; i < nOfAttributesToCheckMain; i++)
+            int n = probabilities.Count;//useDimensionReduction ? probabilities.Count : nOfAttributesToCheckMain;//
+            for (int i = 0; i < n; i++)
             {
                 probabilityProduct *= probabilities[i].Item2;
                 probabilityInverseProduct *= (1 - probabilities[i].Item2);
@@ -129,7 +146,7 @@ namespace IntelektikaProj
             return probabilityThatShroomIsPoisonous;
         }
 
-        private void InitAllMushroomData(List<Mushroom> mushrooms)
+        private void InitAllMushroomData()
         {
             AllData_MushroomAttributeRepeatCountsPoisonous = new Dictionary<Enum, int>();
             AllData_MushroomAttributeRepeatCountsEdible = new Dictionary<Enum, int>();
@@ -181,7 +198,6 @@ namespace IntelektikaProj
             }
         }
 
-        private void InitLearningAndTestingData(List<Mushroom> mushrooms)
         private void InitLearningAndTestingData(int crossValidationI = 0, int crossValidationN = 0)
         {
             MushroomAttributeRepeatCountsPoisonous = new Dictionary<Enum, int>();

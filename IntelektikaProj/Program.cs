@@ -15,9 +15,10 @@ namespace IntelektikaProj
 
             var bayesProgram = new BayesMushroomClassificator(mushrooms);
             bayesProgram.Run();
+            //bayesProgram.crossValidation();
 
-            var compProgram = new CompetitiveMushroomClassificator(mushrooms);
-            compProgram.Run();
+            //var compProgram = new CompetitiveMushroomClassificator(mushrooms);
+            //compProgram.Run();
         }
     }
 }
