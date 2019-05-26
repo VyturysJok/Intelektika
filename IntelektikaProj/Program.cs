@@ -14,8 +14,8 @@ namespace IntelektikaProj
             var mushrooms = MushroomManager.Instance.GetMushrooms();
 
             var bayesProgram = new BayesMushroomClassificator(mushrooms);
-            bayesProgram.Run();
-            //bayesProgram.crossValidation();
+            //bayesProgram.Run();
+            bayesProgram.crossValidation(true);
 
             //var compProgram = new CompetitiveMushroomClassificator(mushrooms);
             //compProgram.Run();

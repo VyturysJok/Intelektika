@@ -11,7 +11,7 @@ namespace IntelektikaProj
         private const decimal neutralProbabilityMain = 0.5M;
         private const decimal isPoisonousBoundaryMain = 0.5M;
         private const int nOfAttributesToCheckMain = 15;
-        private const int crossValidationN = 15;
+        private const int crossValidationN = 10;
         private const decimal percentOfShroomsToUseForTesting = 0.3M; // 30%
 
         private List<Mushroom> mushrooms;
@@ -38,16 +38,7 @@ namespace IntelektikaProj
 
         public void Run()
         {
-            InitAllMushroomData();
-            InitLearningAndTestingData();
-
-            Console.WriteLine("Initing poisonous probability table from learning data...");
-            initPoisonousProbabilityTable();
-            Console.WriteLine("Finished initing poisonous probability table...\n");
-
-            Console.WriteLine("Initing poisonous probability table from all data...");
-            initPoisonousProbabilityTableForAll();
-            Console.WriteLine("Finished initing poisonous probability table...\n");
+            initData();
 
             Console.WriteLine("Beginning Bayes algorithm test..");
             var truePositivesAndFalseNegatives = runBayesAlgorithmTest(false);
@@ -58,13 +49,6 @@ namespace IntelektikaProj
                 truePositivesAndFalseNegatives.Item1,
                 truePositivesAndFalseNegatives.Item2,
                 (truePositivesAndFalseNegatives.Item1 + truePositivesAndFalseNegatives.Item2) / 2);
-
-            Console.WriteLine("Initing pearsons correlation matrix...");
-            var dimensionController = new DimensionController(poisonousProbabilityTableAll, AllShroomData);
-            dimensionController.Run(5);
-            selectedDimensionsIndexes = dimensionController.ShrinkedDimensionsIndexes;
-            Console.WriteLine("Finnished initing pearsons correleation matrix..\n");
-            Console.WriteLine(GetSelectedDimensionsString() + "\n");
 
             Console.WriteLine("Beginning Bayes algorithm test with dimesnion reduction..");
             truePositivesAndFalseNegatives = runBayesAlgorithmTest(true);
@@ -78,13 +62,40 @@ namespace IntelektikaProj
 
         }
 
-        public void crossValidation()
+        private void initData()
         {
+            InitAllMushroomData();
+            InitLearningAndTestingData();
+
+            Console.WriteLine("Initing poisonous probability table from learning data...");
+            initPoisonousProbabilityTable();
+            Console.WriteLine("Finished initing poisonous probability table...\n");
+
+            Console.WriteLine("Initing poisonous probability table from all data...");
+            initPoisonousProbabilityTableForAll();
+            Console.WriteLine("Finished initing poisonous probability table...\n");
+
+            initPearson();
+        }
+
+        private void initPearson()
+        {
+            Console.WriteLine("Initing pearsons correlation matrix...");
+            var dimensionController = new DimensionController(poisonousProbabilityTableAll, AllShroomData);
+            dimensionController.Run(5);
+            selectedDimensionsIndexes = dimensionController.ShrinkedDimensionsIndexes;
+            Console.WriteLine("Finnished initing pearsons correleation matrix..\n");
+            Console.WriteLine(GetSelectedDimensionsString() + "\n");
+        }
+
+        public void crossValidation(bool useDimensionReduction = false)
+        {
+            initData();
             for (int x = 0; x < crossValidationN; x++)
             {
                 InitLearningAndTestingData(x, crossValidationN);
                 initPoisonousProbabilityTable();
-                var truePositivesAndFalseNegatives = runBayesAlgorithmTest(false);
+                var truePositivesAndFalseNegatives = runBayesAlgorithmTest(useDimensionReduction);
                 Console.WriteLine("Bayes algorithm finished for cross validation iteration number: {0}\nResults:", x + 1);
                 Console.WriteLine(
                     "True positive accuracy: {0:f2}\nFalse negative accuracy: {1:f2}\nTotal accuracy {2:f2}",
@@ -211,6 +222,7 @@ namespace IntelektikaProj
             {
                 shroomCountForTesting = mushrooms.Count - (int)(mushrooms.Count * (1.0M - (1.0M / crossValidationN)));
                 shroomRemainder = mushrooms.Count % crossValidationN;
+                shroomRemainder *= 2;
             }
             else
             {
